@@ -61,7 +61,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void userLoggedIn(User user) {
     setState(() {
-      user = user;
+      this.user = user;
     });
     setupTrips();
   }

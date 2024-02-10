@@ -26,11 +26,11 @@ class UserLoggedOut {
     if (response.statusCode != 200) {
       throw Exception('Login Failed: ${response.body}');
     }
-    var responseBody = jsonDecode(response.body);
+    var responseBody = jsonDecode(response.body)['data'];
     return User(
-        id: responseBody['id'],
+        id: responseBody['id'].toString(),
         email: email,
-        appId: responseBody['app_id'],
+        appId: responseBody['app_id'].toString(),
         authorization: response.headers['authorization']!);
   }
 }
