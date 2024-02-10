@@ -1,7 +1,4 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import 'login.dart';
 import 'models/trip.dart';
@@ -37,9 +34,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final Completer<GoogleMapController> _controller =
-      Completer<GoogleMapController>();
-
   User? user;
   List<Trip>? trips;
 
