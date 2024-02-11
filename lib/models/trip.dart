@@ -2,8 +2,10 @@ import 'dart:convert';
 
 import 'package:busfeed_driver/models/user.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 
 import '../constants/api.dart';
+import 'route.dart';
 
 enum Direction { inbound, outbound }
 
@@ -58,6 +60,37 @@ extension BikesAllowedExtension on BikesAllowed {
   }
 }
 
+class Days {
+  final bool monday;
+  final bool tuesday;
+  final bool wednesday;
+  final bool thursday;
+  final bool friday;
+  final bool saturday;
+  final bool sunday;
+
+  Days(
+      {required this.monday,
+      required this.tuesday,
+      required this.wednesday,
+      required this.thursday,
+      required this.friday,
+      required this.saturday,
+      required this.sunday});
+
+  factory Days.fromJson(Map<String, dynamic> json) {
+    return Days(
+      monday: json['monday'] == true,
+      tuesday: json['tuesday'] == true,
+      wednesday: json['wednesday'] == true,
+      thursday: json['thursday'] == true,
+      friday: json['friday'] == true,
+      saturday: json['saturday'] == true,
+      sunday: json['sunday'] == true,
+    );
+  }
+}
+
 class Trip {
   final String id;
   final String appId;
@@ -72,6 +105,8 @@ class Trip {
   final Direction direction;
   final WheelchairAccessible wheelchairAccessible;
   final BikesAllowed bikesAllowed;
+  final Days? days;
+  final Duration? startTime;
 
   Trip(
       {required this.id,
@@ -86,7 +121,22 @@ class Trip {
       required this.tripShortName,
       required this.direction,
       required this.wheelchairAccessible,
-      required this.bikesAllowed});
+      required this.bikesAllowed,
+      this.days,
+      this.startTime});
+
+  startDateTime(DateTime date) {
+    return date.add(startTime!);
+  }
+
+  String startTimeString() {
+    if (startTime == null) {
+      return '';
+    }
+    final hours = startTime!.inHours;
+    final minutes = (startTime!.inMinutes % 60).toString().padLeft(2, '0');
+    return '$hours:$minutes';
+  }
 
   factory Trip.fromJson(Map<String, dynamic> json) {
     return Trip(
@@ -104,11 +154,18 @@ class Trip {
       wheelchairAccessible:
           WheelchairAccessibleExtension.fromJson(json['wheelchair_accessible']),
       bikesAllowed: BikesAllowedExtension.fromJson(json['bikes_allowed']),
+      days: json['days'] != null ? Days.fromJson(json['days']) : null,
+      startTime: Duration(seconds: json['first_stop_time'] ?? 0),
     );
   }
 
-  static Future<List<Trip>> fetchTrips(User user) async {
-    final url = Uri.https(API_URL, 'api/trips');
+  static Future<List<Trip>> fetchTrips(
+      {required User user, TripRoute? route, DateTime? dateTime}) async {
+    final queryParameters = <String, String>{
+      if (route != null) 'route_id': route.id,
+      if (dateTime != null) 'date': DateFormat('yyyy-MM-dd').format(dateTime),
+    };
+    final url = Uri.https(API_URL, 'api/trips', queryParameters);
     final response = await http.get(
       url,
       headers: <String, String>{

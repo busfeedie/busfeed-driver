@@ -4,13 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 
-import 'models/user.dart';
+import '../helpers/api.dart';
+import '../models/trip.dart';
+import '../models/user.dart';
 
 class TrackPage extends StatefulWidget {
-  const TrackPage({super.key, required this.title, required this.user});
+  TrackPage({super.key, required this.title, required this.user, this.trip});
 
   final String title;
   final User user;
+  Trip? trip;
 
   @override
   State<TrackPage> createState() => _MyHomePageState();
@@ -40,35 +43,38 @@ class _MyHomePageState extends State<TrackPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: Stack(
-      children: [
-        SizedBox(
-            height: MediaQuery.of(context).size.height - 70,
-            child: GoogleMap(
-              myLocationEnabled: true,
-              compassEnabled: false,
-              myLocationButtonEnabled: false,
-              buildingsEnabled: false,
-              tiltGesturesEnabled: false,
-              zoomControlsEnabled: false,
-              mapType: MapType.normal,
-              initialCameraPosition: _ireland,
-              onMapCreated: (GoogleMapController controller) {
-                _controller.complete(controller);
-              },
-            )),
-        Container(
-          alignment: Alignment.bottomCenter,
-          child: const ListTile(
-            leading: Icon(Icons.directions_bus),
-            title: Text('Tracking...'),
-            subtitle: Text('Route 1'),
-            trailing: Icon(Icons.more_vert),
-            tileColor: Colors.white,
-          ),
+        appBar: AppBar(
+          title: Text(widget.title),
         ),
-      ],
-    ));
+        body: Stack(
+          children: [
+            SizedBox(
+                height: MediaQuery.of(context).size.height - 70,
+                child: GoogleMap(
+                  myLocationEnabled: true,
+                  compassEnabled: false,
+                  myLocationButtonEnabled: false,
+                  buildingsEnabled: false,
+                  tiltGesturesEnabled: false,
+                  zoomControlsEnabled: false,
+                  mapType: MapType.normal,
+                  initialCameraPosition: _ireland,
+                  onMapCreated: (GoogleMapController controller) {
+                    _controller.complete(controller);
+                  },
+                )),
+            Container(
+              alignment: Alignment.bottomCenter,
+              child: const ListTile(
+                leading: Icon(Icons.directions_bus),
+                title: Text('Tracking...'),
+                subtitle: Text('Route 1'),
+                trailing: Icon(Icons.more_vert),
+                tileColor: Colors.white,
+              ),
+            ),
+          ],
+        ));
   }
 
   void _goToTheUser(LocationData locationData) async {
@@ -81,10 +87,22 @@ class _MyHomePageState extends State<TrackPage> {
         .animateCamera(CameraUpdate.newCameraPosition(userLocation));
   }
 
-  _locationChanged(LocationData locationData) {
+  _locationChanged(LocationData locationData) async {
     print(locationData.latitude);
     print(locationData.longitude);
     _goToTheUser(locationData);
+    try {
+      var responseBody = await BusfeedApi.makePostRequest(
+          user: widget.user,
+          path: 'api/positions',
+          body: {
+            'lat': locationData.latitude,
+            'lon': locationData.longitude,
+            if (widget.trip != null) 'trip_id': widget.trip?.id
+          });
+    } catch (e) {
+      print(e);
+    }
   }
 
   void _setupLocation() async {

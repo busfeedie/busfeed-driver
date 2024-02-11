@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'login.dart';
 import 'models/trip.dart';
 import 'models/user.dart';
+import 'views/route_list.dart';
 
 void main() async {
   runApp(const MyApp());
@@ -44,28 +45,19 @@ class _MyHomePageState extends State<MyHomePage> {
             ? LoginPage(
                 loginCallback: userLoggedIn,
               )
-            : trips == null
-                ? CircularProgressIndicator()
-                : ListView(
-                    children: trips!.map((trip) {
-                    return ListTile(
-                      title: Text(trip.tripHeadsign),
-                      subtitle: Text(trip.serviceType),
-                    );
-                  }).toList()));
+            : RouteList(user: user!));
   }
 
   void userLoggedIn(User user) {
     setState(() {
       this.user = user;
     });
-    setupTrips();
-  }
-
-  void setupTrips() async {
-    var trips = await Trip.fetchTrips(user!);
-    setState(() {
-      this.trips = trips;
-    });
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (context) => RouteListPage(
+                user: user,
+              )),
+    );
   }
 }

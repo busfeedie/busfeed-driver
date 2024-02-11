@@ -1,10 +1,8 @@
-
-
 class User {
   final String id;
   final String email;
   final String appId;
-  final String authorization;
+  String authorization;
 
   User(
       {required this.id,
