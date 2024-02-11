@@ -40,17 +40,19 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: user == null || trips == null
+        body: user == null
             ? LoginPage(
                 loginCallback: userLoggedIn,
               )
-            : ListView(
-                children: trips!.map((trip) {
-                return ListTile(
-                  title: Text(trip.tripHeadsign),
-                  subtitle: Text(trip.serviceType),
-                );
-              }).toList()));
+            : trips == null
+                ? CircularProgressIndicator()
+                : ListView(
+                    children: trips!.map((trip) {
+                    return ListTile(
+                      title: Text(trip.tripHeadsign),
+                      subtitle: Text(trip.serviceType),
+                    );
+                  }).toList()));
   }
 
   void userLoggedIn(User user) {
@@ -63,7 +65,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void setupTrips() async {
     var trips = await Trip.fetchTrips(user!);
     setState(() {
-      trips = trips;
+      this.trips = trips;
     });
   }
 }

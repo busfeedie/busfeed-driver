@@ -3,7 +3,22 @@ import 'dart:convert';
 import 'package:busfeed_driver/models/user.dart';
 import 'package:http/http.dart' as http;
 
+import '../constants/api.dart';
+
 enum Direction { inbound, outbound }
+
+extension DirectionExtension on Direction {
+  static Direction fromJson(String direction) {
+    switch (direction) {
+      case 'outbound':
+        return Direction.outbound;
+      case 'inbound':
+        return Direction.inbound;
+      default:
+        throw Exception('Unknown direction value $direction');
+    }
+  }
+}
 
 enum WheelchairAccessible {
   wheelchairAccessibilityUnknown,
@@ -12,7 +27,7 @@ enum WheelchairAccessible {
 }
 
 extension WheelchairAccessibleExtension on WheelchairAccessible {
-  static WheelchairAccessible fromJson(String wheelchairAccessible) {
+  static WheelchairAccessible fromJson(String? wheelchairAccessible) {
     switch (wheelchairAccessible) {
       case 'wheelchair_accessibility_unknown':
         return WheelchairAccessible.wheelchairAccessibilityUnknown;
@@ -21,8 +36,7 @@ extension WheelchairAccessibleExtension on WheelchairAccessible {
       case 'wheelchair_not_accessible':
         return WheelchairAccessible.wheelchairNotAccessible;
       default:
-        throw Exception(
-            'Unknown wheelchair accessible value $wheelchairAccessible');
+        return WheelchairAccessible.wheelchairAccessibilityUnknown;
     }
   }
 }
@@ -30,7 +44,7 @@ extension WheelchairAccessibleExtension on WheelchairAccessible {
 enum BikesAllowed { bikesUnknown, bikesAllowed, bikesNotAllowed }
 
 extension BikesAllowedExtension on BikesAllowed {
-  static BikesAllowed fromJson(String bikesAllowed) {
+  static BikesAllowed fromJson(String? bikesAllowed) {
     switch (bikesAllowed) {
       case 'bikes_unknown':
         return BikesAllowed.bikesUnknown;
@@ -39,7 +53,7 @@ extension BikesAllowedExtension on BikesAllowed {
       case 'bikes_not_allowed':
         return BikesAllowed.bikesNotAllowed;
       default:
-        throw Exception('Unknown bikes allowed value $bikesAllowed');
+        return BikesAllowed.bikesUnknown;
     }
   }
 }
@@ -76,17 +90,17 @@ class Trip {
 
   factory Trip.fromJson(Map<String, dynamic> json) {
     return Trip(
-      id: json['id'],
-      appId: json['app_id'],
-      routeId: json['route_id'],
-      blockId: json['block_id'],
-      shapeId: json['shape_id'],
-      serviceId: json['service_id'],
-      serviceType: json['service_type'],
-      gtfsTripId: json['gtfs_trip_id'],
+      id: json['id'].toString(),
+      appId: json['app_id'].toString(),
+      routeId: json['route_id'].toString(),
+      blockId: json['block_id'].toString(),
+      shapeId: json['shape_id'].toString(),
+      serviceId: json['service_id'].toString(),
+      serviceType: json['service_type'].toString(),
+      gtfsTripId: json['gtfs_trip_id'].toString(),
       tripHeadsign: json['trip_headsign'],
       tripShortName: json['trip_short_name'],
-      direction: Direction.values[json['direction']],
+      direction: DirectionExtension.fromJson(json['direction']),
       wheelchairAccessible:
           WheelchairAccessibleExtension.fromJson(json['wheelchair_accessible']),
       bikesAllowed: BikesAllowedExtension.fromJson(json['bikes_allowed']),
@@ -94,7 +108,7 @@ class Trip {
   }
 
   static Future<List<Trip>> fetchTrips(User user) async {
-    final url = Uri.http('localhost:3000', 'api/trips');
+    final url = Uri.https(API_URL, 'api/trips');
     final response = await http.get(
       url,
       headers: <String, String>{

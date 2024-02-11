@@ -3,14 +3,15 @@ import 'dart:convert';
 import 'package:busfeed_driver/models/user.dart';
 import 'package:http/http.dart' as http;
 
+import '../constants/api.dart';
+
 class UserLoggedOut {
   final String email;
 
   UserLoggedOut({required this.email});
 
   Future<User> login({required String password}) async {
-    // TODO: change to https
-    final url = Uri.http('134.209.181.220', 'api/login');
+    final url = Uri.https(API_URL, 'api/login');
     final response = await http.post(
       url,
       headers: <String, String>{
