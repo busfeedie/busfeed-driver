@@ -65,11 +65,11 @@ class _MyHomePageState extends State<TrackPage> {
                 )),
             Container(
               alignment: Alignment.bottomCenter,
-              child: const ListTile(
+              child: ListTile(
                 leading: Icon(Icons.directions_bus),
-                title: Text('Tracking...'),
-                subtitle: Text('Route 1'),
-                trailing: Icon(Icons.more_vert),
+                title: const Text('Tracking...'),
+                subtitle: Text('Heading for ${widget.trip?.tripHeadsign}'),
+                // trailing: const Icon(Icons.more_vert),
                 tileColor: Colors.white,
               ),
             ),
