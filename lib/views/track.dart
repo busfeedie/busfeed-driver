@@ -9,11 +9,12 @@ import '../models/trip.dart';
 import '../models/user.dart';
 
 class TrackPage extends StatefulWidget {
-  TrackPage({super.key, required this.title, required this.user, this.trip});
+  const TrackPage(
+      {super.key, required this.title, required this.user, this.trip});
 
   final String title;
   final User user;
-  Trip? trip;
+  final Trip? trip;
 
   @override
   State<TrackPage> createState() => _MyHomePageState();
@@ -66,7 +67,7 @@ class _MyHomePageState extends State<TrackPage> {
             Container(
               alignment: Alignment.bottomCenter,
               child: ListTile(
-                leading: Icon(Icons.directions_bus),
+                leading: const Icon(Icons.directions_bus),
                 title: const Text('Tracking...'),
                 subtitle: Text('Heading for ${widget.trip?.tripHeadsign}'),
                 // trailing: const Icon(Icons.more_vert),
@@ -92,7 +93,7 @@ class _MyHomePageState extends State<TrackPage> {
     print(locationData.longitude);
     _goToTheUser(locationData);
     try {
-      var responseBody = await BusfeedApi.makePostRequest(
+      await BusfeedApi.makePostRequest(
           user: widget.user,
           path: 'api/positions',
           body: {

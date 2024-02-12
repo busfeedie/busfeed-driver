@@ -5,10 +5,10 @@ import 'models/user.dart';
 import 'models/user_logged_out.dart';
 
 class LoginPage extends StatefulWidget {
-  LoginPage({super.key, this.userLoggedOut, required this.loginCallback});
+  const LoginPage({super.key, this.userLoggedOut, required this.loginCallback});
 
-  UserLoggedOut? userLoggedOut;
-  Function(User) loginCallback;
+  final UserLoggedOut? userLoggedOut;
+  final Function(User) loginCallback;
 
   @override
   State<LoginPage> createState() => LoginPageState();
@@ -87,7 +87,7 @@ class LoginPageState extends State<LoginPage> {
                     padding: const EdgeInsets.all(10),
                     child: Text(
                       'Login failed, please try again. $failureMessage',
-                      style: TextStyle(color: Colors.red),
+                      style: const TextStyle(color: Colors.red),
                     ),
                   ),
                 Container(
