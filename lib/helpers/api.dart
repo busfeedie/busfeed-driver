@@ -40,8 +40,10 @@ class BusfeedApi {
           'Authorization': user.authorization,
         },
         body: json.encode(body));
-    if (response.statusCode != 200) {
-      throw Exception('Failed to fetch');
+    if (response.statusCode == 401) {
+      user.expired = true;
+    } else if (response.statusCode != 200) {
+      throw Exception('Failed to send request');
     }
     if (response.headers['authorization'] != null) {
       user.authorization = response.headers['authorization']!;

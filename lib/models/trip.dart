@@ -1,10 +1,7 @@
-import 'dart:convert';
-
 import 'package:busfeed_driver/models/user.dart';
-import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 
-import '../constants/api.dart';
+import '../helpers/api.dart';
 import 'route.dart';
 
 enum Direction { inbound, outbound }
@@ -165,18 +162,8 @@ class Trip {
       if (route != null) 'route_id': route.id,
       if (dateTime != null) 'date': DateFormat('yyyy-MM-dd').format(dateTime),
     };
-    final url = Uri.https(API_URL, 'api/trips', queryParameters);
-    final response = await http.get(
-      url,
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-        'Authorization': user.authorization,
-      },
-    );
-    if (response.statusCode != 200) {
-      throw Exception('Failed to fetch trips');
-    }
-    var responseBody = jsonDecode(response.body);
+    var responseBody = await BusfeedApi.makeRequest(
+        user: user, path: 'api/trips', queryParameters: queryParameters);
     return responseBody.map<Trip>((json) => Trip.fromJson(json)).toList();
   }
 }

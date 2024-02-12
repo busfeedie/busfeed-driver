@@ -3,6 +3,7 @@ class User {
   final String email;
   final String appId;
   String authorization;
+  bool expired = false;
 
   User(
       {required this.id,

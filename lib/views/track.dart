@@ -89,8 +89,6 @@ class _MyHomePageState extends State<TrackPage> {
   }
 
   _locationChanged(LocationData locationData) async {
-    print(locationData.latitude);
-    print(locationData.longitude);
     _goToTheUser(locationData);
     try {
       await BusfeedApi.makePostRequest(
@@ -99,9 +97,10 @@ class _MyHomePageState extends State<TrackPage> {
           body: {
             'lat': locationData.latitude,
             'lon': locationData.longitude,
-            if (widget.trip != null) 'trip_id': widget.trip?.id
+            if (widget.trip != null) 'trip': {'trip_id': widget.trip?.id},
           });
     } catch (e) {
+      print('Error sending location');
       print(e);
     }
   }

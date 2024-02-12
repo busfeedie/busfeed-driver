@@ -35,8 +35,9 @@ class TripListState extends State<TripList> {
             : ListView(
                 children: trips!.map((trip) {
                 return ListTile(
-                  title: Text(trip.tripHeadsign),
-                  subtitle: Text(trip.startTimeString()),
+                  title: Text('To ${trip.tripHeadsign}'),
+                  subtitle: Text('Departing ${trip.startTimeString()}'),
+                  trailing: const Icon(Icons.arrow_forward_ios),
                   onTap: () {
                     Navigator.push(
                       context,

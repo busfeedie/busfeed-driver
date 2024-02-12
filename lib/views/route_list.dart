@@ -46,8 +46,9 @@ class RouteListState extends State<RouteList> {
         : ListView(
             children: routes!.map((route) {
             return ListTile(
-              title: Text(route.routeShortName ?? ''),
+              title: Text('Route ${route.routeShortName ?? ''}'),
               subtitle: Text(route.routeLongName ?? ''),
+              trailing: const Icon(Icons.arrow_forward_ios),
               onTap: () {
                 Navigator.push(
                   context,

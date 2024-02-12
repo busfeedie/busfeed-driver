@@ -15,12 +15,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Busfeed Driver',
+      title: 'Busfeed',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Busfeed Driver App'),
+      home: const MyHomePage(title: 'Busfeed'),
     );
   }
 }
@@ -41,7 +41,10 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: user == null
+        appBar: AppBar(
+          title: Text(widget.title),
+        ),
+        body: user == null || user!.expired
             ? LoginPage(
                 loginCallback: userLoggedIn,
               )
@@ -52,12 +55,12 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       this.user = user;
     });
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-          builder: (context) => RouteListPage(
-                user: user,
-              )),
-    );
+    // Navigator.(
+    //   context,
+    //   MaterialPageRoute(
+    //       builder: (context) => RouteListPage(
+    //             user: user,
+    //           )),
+    // );
   }
 }
