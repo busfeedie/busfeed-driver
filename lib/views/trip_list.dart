@@ -37,7 +37,16 @@ class TripListState extends State<TripList> {
                 return ListTile(
                   title: Text('To ${trip.tripHeadsign}'),
                   subtitle: Text('Departing ${trip.startTimeString()}'),
-                  trailing: const Icon(Icons.arrow_forward_ios),
+                  trailing: Container(
+                    decoration: BoxDecoration(
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(10.0)),
+                        color: trip.statusColor()),
+                    padding: const EdgeInsets.all(12.0),
+                    child: Text("${trip.statusText()} > ",
+                        style: const TextStyle(
+                            color: Colors.black, fontWeight: FontWeight.w900)),
+                  ),
                   onTap: () {
                     Navigator.push(
                       context,

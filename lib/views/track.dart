@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:busfeed_driver/models/vehicle_position.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
@@ -29,6 +30,9 @@ class _MyHomePageState extends State<TrackPage> {
 
   bool _locationServiceEnabled = false;
   PermissionStatus _locationPermissionGranted = PermissionStatus.denied;
+  bool _isTracking = false;
+  Timer? trackTimer;
+  VehiclePosition? vehiclePosition;
 
   static const CameraPosition _ireland = CameraPosition(
     target: LatLng(53, -6),
@@ -37,7 +41,11 @@ class _MyHomePageState extends State<TrackPage> {
 
   @override
   void initState() {
-    _setupLocation();
+    if (widget.trip == null || widget.trip!.activeTracking == false) {
+      _setupLocation();
+    } else {
+      _setupShowTrip();
+    }
     super.initState();
   }
 
@@ -63,19 +71,32 @@ class _MyHomePageState extends State<TrackPage> {
                   onMapCreated: (GoogleMapController controller) {
                     _controller.complete(controller);
                   },
+                  markers: vehiclePosition != null
+                      ? {
+                          vehiclePosition!.toMarker(),
+                        }
+                      : {},
                 )),
             Container(
               alignment: Alignment.bottomCenter,
               child: ListTile(
                 leading: const Icon(Icons.directions_bus),
-                title: const Text('Tracking...'),
-                subtitle: Text('Heading for ${widget.trip?.tripHeadsign}'),
-                // trailing: const Icon(Icons.more_vert),
-                tileColor: Colors.white,
+                title: Text(widget.title),
+                subtitle: Text('To ${widget.trip?.tripHeadsign}'),
+                trailing: !_activeTrip()
+                    ? FilledButton(
+                        onPressed: startTracking,
+                        child: const Text('Start tracking'))
+                    : null,
+                tileColor: widget.trip?.statusColor() ?? Colors.white,
               ),
             ),
           ],
         ));
+  }
+
+  bool _activeTrip() {
+    return widget.trip?.activeTracking ?? false;
   }
 
   void _goToTheUser(LocationData locationData) async {
@@ -90,23 +111,71 @@ class _MyHomePageState extends State<TrackPage> {
 
   _locationChanged(LocationData locationData) async {
     _goToTheUser(locationData);
-    try {
-      await BusfeedApi.makePostRequest(
-          user: widget.user,
-          path: 'api/positions',
-          body: {
-            'lat': locationData.latitude,
-            'lon': locationData.longitude,
-            if (widget.trip != null) 'trip': {'trip_id': widget.trip?.id},
-          });
-    } catch (e) {
-      print('Error sending location');
-      print(e);
+    if (_isTracking) {
+      _trackLocationChanged(locationData);
     }
   }
 
+  _trackLocationChanged(LocationData locationData) async {
+    if (widget.trip != null) {
+      try {
+        await BusfeedApi.makePostRequest(
+            user: widget.user,
+            path: 'api/positions',
+            body: {
+              'lat': locationData.latitude,
+              'lon': locationData.longitude,
+              if (widget.trip != null) 'trip': {'trip_id': widget.trip?.id},
+            });
+      } catch (e) {
+        print('Error sending location');
+        print(e);
+      }
+    }
+  }
+
+  void startTracking() {
+    location.enableBackgroundMode(enable: true);
+    setState(() {
+      _isTracking = true;
+      widget.trip?.activeTracking = true;
+    });
+    location.getLocation();
+    location.onLocationChanged.listen(_locationChanged);
+  }
+
+  onDispose() {
+    trackTimer?.cancel();
+    super.dispose();
+  }
+
+  void _showTrip() async {
+    try {
+      final vehiclePosition =
+          await widget.trip?.fetchLastLocation(user: widget.user);
+      if (vehiclePosition != null) {
+        setState(() {
+          this.vehiclePosition = vehiclePosition;
+        });
+        _goToTheUser(vehiclePosition.toLocationData());
+        final GoogleMapController controller = await _controller.future;
+        controller.showMarkerInfoWindow(this.vehiclePosition!.markerId);
+      }
+    } on Exception catch (e, stackTrace) {
+      print('Error fetching last location');
+      print(e);
+      print(stackTrace.toString());
+    }
+  }
+
+  _setupShowTrip() {
+    _showTrip();
+    const oneMin = Duration(seconds: 60);
+    Timer.periodic(oneMin, (Timer t) => _showTrip());
+  }
+
   void _setupLocation() async {
-    location.changeSettings(
+    await location.changeSettings(
       accuracy: LocationAccuracy.high,
       interval: 1000,
       distanceFilter: 10,
@@ -127,7 +196,6 @@ class _MyHomePageState extends State<TrackPage> {
         return;
       }
     }
-    location.enableBackgroundMode(enable: true);
     await location.getLocation();
     location.onLocationChanged.listen(_locationChanged);
   }

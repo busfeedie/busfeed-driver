@@ -1,4 +1,6 @@
 import 'package:busfeed_driver/models/user.dart';
+import 'package:busfeed_driver/models/vehicle_position.dart';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../helpers/api.dart';
@@ -104,6 +106,7 @@ class Trip {
   final BikesAllowed bikesAllowed;
   final Days? days;
   final Duration? startTime;
+  bool activeTracking;
 
   Trip(
       {required this.id,
@@ -119,11 +122,20 @@ class Trip {
       required this.direction,
       required this.wheelchairAccessible,
       required this.bikesAllowed,
+      this.activeTracking = false,
       this.days,
       this.startTime});
 
   startDateTime(DateTime date) {
     return date.add(startTime!);
+  }
+
+  statusText() {
+    return activeTracking ? 'Active' : 'Not tracking';
+  }
+
+  statusColor() {
+    return activeTracking ? Colors.green : Colors.yellow;
   }
 
   String startTimeString() {
@@ -153,6 +165,7 @@ class Trip {
       bikesAllowed: BikesAllowedExtension.fromJson(json['bikes_allowed']),
       days: json['days'] != null ? Days.fromJson(json['days']) : null,
       startTime: Duration(seconds: json['first_stop_time'] ?? 0),
+      activeTracking: json['active'] == true,
     );
   }
 
@@ -165,5 +178,12 @@ class Trip {
     var responseBody = await BusfeedApi.makeRequest(
         user: user, path: 'api/trips', queryParameters: queryParameters);
     return responseBody.map<Trip>((json) => Trip.fromJson(json)).toList();
+  }
+
+  Future<VehiclePosition> fetchLastLocation({required User user}) async {
+    var responseBody = await BusfeedApi.makeRequest(
+        user: user, path: 'api/trips/$id/latest_position');
+    print(responseBody);
+    return VehiclePosition.fromJson(responseBody);
   }
 }
