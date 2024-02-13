@@ -60,7 +60,8 @@ class _MyHomePageState extends State<TrackPage> {
             SizedBox(
                 height: MediaQuery.of(context).size.height - 70,
                 child: GoogleMap(
-                  myLocationEnabled: true,
+                  myLocationEnabled:
+                      _locationPermissionGranted == PermissionStatus.granted,
                   compassEnabled: false,
                   myLocationButtonEnabled: false,
                   buildingsEnabled: false,
@@ -175,12 +176,6 @@ class _MyHomePageState extends State<TrackPage> {
   }
 
   void _setupLocation() async {
-    await location.changeSettings(
-      accuracy: LocationAccuracy.high,
-      interval: 1000,
-      distanceFilter: 10,
-    );
-
     _locationServiceEnabled = await location.serviceEnabled();
     if (!_locationServiceEnabled) {
       _locationServiceEnabled = await location.requestService();
@@ -196,6 +191,12 @@ class _MyHomePageState extends State<TrackPage> {
         return;
       }
     }
+
+    await location.changeSettings(
+      accuracy: LocationAccuracy.high,
+      interval: 1000,
+      distanceFilter: 10,
+    );
     await location.getLocation();
     location.onLocationChanged.listen(_locationChanged);
   }
