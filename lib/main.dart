@@ -1,8 +1,10 @@
+import 'package:busfeed_driver/models/user_logged_out.dart';
 import 'package:flutter/material.dart';
 
 import 'login.dart';
 import 'models/trip.dart';
 import 'models/user.dart';
+import 'models/user_common.dart';
 import 'views/route_list.dart';
 
 void main() async {
@@ -35,8 +37,15 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  User? user;
+  UserCommon? user;
   List<Trip>? trips;
+  bool loadingUser = true;
+
+  @override
+  void initState() {
+    checkUserStorage();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,11 +53,24 @@ class _MyHomePageState extends State<MyHomePage> {
         appBar: AppBar(
           title: Text(widget.title),
         ),
-        body: user == null || user!.expired
-            ? LoginPage(
-                loginCallback: userLoggedIn,
+        body: loadingUser
+            ? const Center(
+                child: CircularProgressIndicator(),
               )
-            : RouteList(user: user!));
+            : user == null || !user!.authenticated
+                ? LoginPage(
+                    userLoggedOut: user as UserLoggedOut?,
+                    loginCallback: userLoggedIn,
+                  )
+                : RouteList(user: user as User));
+  }
+
+  void checkUserStorage() async {
+    var user = await UserCommon.loadFromStorage();
+    setState(() {
+      this.user = user;
+      loadingUser = false;
+    });
   }
 
   void userLoggedIn(User user) {

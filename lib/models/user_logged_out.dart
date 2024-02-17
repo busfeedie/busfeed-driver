@@ -1,14 +1,13 @@
 import 'dart:convert';
 
 import 'package:busfeed_driver/models/user.dart';
+import 'package:busfeed_driver/models/user_common.dart';
 import 'package:http/http.dart' as http;
 
 import '../constants/api.dart';
 
-class UserLoggedOut {
-  final String email;
-
-  UserLoggedOut({required this.email});
+class UserLoggedOut extends UserCommon {
+  UserLoggedOut({required super.email});
 
   Future<User> login({required String password}) async {
     final url = Uri.https(API_URL, 'api/login');
@@ -28,10 +27,12 @@ class UserLoggedOut {
       throw Exception('Login Failed: ${response.body}');
     }
     var responseBody = jsonDecode(response.body)['data'];
-    return User(
+    var user = User(
         id: responseBody['id'].toString(),
         email: email,
         appId: responseBody['app_id'].toString(),
         authorization: response.headers['authorization']!);
+    user.writeToStore();
+    return user;
   }
 }
