@@ -180,10 +180,12 @@ class Trip {
     return responseBody.map<Trip>((json) => Trip.fromJson(json)).toList();
   }
 
-  Future<VehiclePosition> fetchLastLocation({required User user}) async {
+  Future<VehiclePosition?> fetchLastLocation({required User user}) async {
     var responseBody = await BusfeedApi.makeRequest(
         user: user, path: 'api/trips/$id/latest_position');
-    print(responseBody);
+    if (responseBody == null) {
+      return null;
+    }
     return VehiclePosition.fromJson(responseBody);
   }
 }

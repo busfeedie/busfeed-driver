@@ -9,6 +9,8 @@ import '../helpers/api.dart';
 import '../models/trip.dart';
 import '../models/user.dart';
 
+const viewRefreshTime = Duration(seconds: 10);
+
 class TrackPage extends StatefulWidget {
   const TrackPage(
       {super.key, required this.title, required this.user, this.trip});
@@ -31,7 +33,7 @@ class _MyHomePageState extends State<TrackPage> {
   bool _locationServiceEnabled = false;
   PermissionStatus _locationPermissionGranted = PermissionStatus.denied;
   bool _isTracking = false;
-  Timer? trackTimer;
+  Timer? viewUpdateTimer;
   VehiclePosition? vehiclePosition;
 
   static const CameraPosition _ireland = CameraPosition(
@@ -51,49 +53,93 @@ class _MyHomePageState extends State<TrackPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: Text(widget.title),
-        ),
-        body: Stack(
-          children: [
-            SizedBox(
-                height: MediaQuery.of(context).size.height - 70,
-                child: GoogleMap(
-                  myLocationEnabled:
-                      _locationPermissionGranted == PermissionStatus.granted,
-                  compassEnabled: false,
-                  myLocationButtonEnabled: false,
-                  buildingsEnabled: false,
-                  tiltGesturesEnabled: false,
-                  zoomControlsEnabled: false,
-                  mapType: MapType.normal,
-                  initialCameraPosition: _ireland,
-                  onMapCreated: (GoogleMapController controller) {
-                    _controller.complete(controller);
-                  },
-                  markers: vehiclePosition != null
-                      ? {
-                          vehiclePosition!.toMarker(),
-                        }
-                      : {},
-                )),
-            Container(
-              alignment: Alignment.bottomCenter,
-              child: ListTile(
-                leading: const Icon(Icons.directions_bus),
-                title: Text(widget.title),
-                subtitle: Text('To ${widget.trip?.tripHeadsign}'),
-                trailing: !_activeTrip()
-                    ? FilledButton(
-                        onPressed: startTracking,
-                        child: const Text('Start tracking'))
-                    : null,
-                tileColor: widget.trip?.statusColor() ?? Colors.white,
+    return PopScope(
+        canPop: !_isTracking,
+        onPopInvoked: (bool didPop) {
+          if (didPop) {
+            return;
+          }
+          _showBackDialog();
+        },
+        child: Scaffold(
+            appBar: AppBar(
+              title: Text(widget.title),
+            ),
+            body: Stack(
+              children: [
+                SizedBox(
+                    height: MediaQuery.of(context).size.height - 70,
+                    child: GoogleMap(
+                      myLocationEnabled: _locationPermissionGranted ==
+                          PermissionStatus.granted,
+                      compassEnabled: false,
+                      myLocationButtonEnabled: false,
+                      buildingsEnabled: false,
+                      tiltGesturesEnabled: false,
+                      zoomControlsEnabled: false,
+                      mapType: MapType.normal,
+                      initialCameraPosition: _ireland,
+                      onMapCreated: (GoogleMapController controller) {
+                        _controller.complete(controller);
+                      },
+                      markers: vehiclePosition != null
+                          ? {
+                              vehiclePosition!.toMarker(),
+                            }
+                          : {},
+                    )),
+                Container(
+                  alignment: Alignment.bottomCenter,
+                  child: ListTile(
+                    leading: const Icon(Icons.directions_bus),
+                    title: Text(widget.title),
+                    subtitle: Text('To ${widget.trip?.tripHeadsign}'),
+                    trailing: !_activeTrip()
+                        ? FilledButton(
+                            onPressed: startTracking,
+                            child: const Text('Start tracking'))
+                        : null,
+                    tileColor: widget.trip?.statusColor() ?? Colors.white,
+                  ),
+                ),
+              ],
+            )));
+  }
+
+  void _showBackDialog() {
+    showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Are you sure?'),
+          content: const Text(
+            'Do you want to stop tracking this trip?',
+          ),
+          actions: <Widget>[
+            TextButton(
+              style: TextButton.styleFrom(
+                textStyle: Theme.of(context).textTheme.labelLarge,
               ),
+              child: const Text('Nevermind'),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
+            TextButton(
+              style: TextButton.styleFrom(
+                textStyle: Theme.of(context).textTheme.labelLarge,
+              ),
+              child: const Text('Stop Tracking'),
+              onPressed: () {
+                _isTracking = false;
+                Navigator.pop(context);
+                Navigator.pop(context);
+              },
             ),
           ],
-        ));
+        );
+      },
+    );
   }
 
   bool _activeTrip() {
@@ -146,7 +192,7 @@ class _MyHomePageState extends State<TrackPage> {
   }
 
   onDispose() {
-    trackTimer?.cancel();
+    viewUpdateTimer?.cancel();
     super.dispose();
   }
 
@@ -171,8 +217,7 @@ class _MyHomePageState extends State<TrackPage> {
 
   _setupShowTrip() {
     _showTrip();
-    const oneMin = Duration(seconds: 60);
-    Timer.periodic(oneMin, (Timer t) => _showTrip());
+    viewUpdateTimer = Timer.periodic(viewRefreshTime, (Timer t) => _showTrip());
   }
 
   void _setupLocation() async {
