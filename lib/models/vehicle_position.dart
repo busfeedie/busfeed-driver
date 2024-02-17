@@ -35,13 +35,13 @@ class VehiclePosition {
       id: json['id'].toString(),
       lon: json['lon'].toDouble(),
       lat: json['lat'].toDouble(),
-      // bearing: json['bearing']?.toDouble(),
+      bearing: json['bearing']?.toDouble(),
       // odometer: json['odometer']?.toDouble(),
-      // speed: json['speed']?.toDouble(),
-      // measuredAt: json['measured_at'] != null
-      //     ? DateTime.parse(json['measured_at'])
-      //     : null,
-      // createdAt: DateTime.parse(json['created_at']),
+      speed: json['speed']?.toDouble(),
+      measuredAt: json['measured_at'] != null
+          ? DateTime.parse(json['measured_at'])
+          : null,
+      createdAt: DateTime.parse(json['created_at']),
       updatedAt: DateTime.parse(json['updated_at']),
       tripId: json['trip_id'].toString(),
       appId: json['app_id'].toString(),
@@ -58,7 +58,7 @@ class VehiclePosition {
       'speed': speed ?? 0.0,
       'speed_accuracy': 0.0,
       'heading': bearing ?? 0.0,
-      'time': measuredAt?.millisecondsSinceEpoch ?? 0.0,
+      'time': measuredAt?.millisecondsSinceEpoch.ceilToDouble() ?? 0.0,
       'floor': 0.0,
       'vertical_accuracy': 0.0,
     });
@@ -74,6 +74,8 @@ class VehiclePosition {
     return Marker(
         markerId: markerId,
         position: LatLng(lat, lon),
+        rotation: bearing ?? 0.0,
+        // icon: Icons.directions_bus,
         infoWindow: InfoWindow(
             title: 'Updated ${timeSinceLastUpdate().inMinutes}m ago'));
   }

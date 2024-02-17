@@ -167,6 +167,9 @@ class _MyHomePageState extends State<TrackPage> {
   _trackLocationChanged(LocationData locationData) async {
     if (widget.trip != null) {
       try {
+        final time = locationData.time != null
+            ? DateTime.fromMillisecondsSinceEpoch(locationData.time!.toInt())
+            : DateTime.now();
         await BusfeedApi.makePostRequest(
             user: widget.user,
             path: 'api/positions',
@@ -175,7 +178,7 @@ class _MyHomePageState extends State<TrackPage> {
               'lon': locationData.longitude,
               'bearing': locationData.heading,
               'speed': locationData.speed,
-              'measured_at': DateTime.now().toIso8601String(),
+              'measured_at': time.toIso8601String(),
               if (widget.trip != null) 'trip': {'trip_id': widget.trip?.id},
             });
       } catch (e) {
