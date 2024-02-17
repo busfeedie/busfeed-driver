@@ -73,10 +73,11 @@ class _MyHomePageState extends State<TrackPage> {
                       myLocationEnabled: _locationPermissionGranted ==
                           PermissionStatus.granted,
                       compassEnabled: false,
-                      myLocationButtonEnabled: false,
+                      myLocationButtonEnabled: true,
                       buildingsEnabled: false,
                       tiltGesturesEnabled: false,
                       zoomControlsEnabled: false,
+                      mapToolbarEnabled: false,
                       mapType: MapType.normal,
                       initialCameraPosition: _ireland,
                       onMapCreated: (GoogleMapController controller) {
@@ -172,6 +173,9 @@ class _MyHomePageState extends State<TrackPage> {
             body: {
               'lat': locationData.latitude,
               'lon': locationData.longitude,
+              'bearing': locationData.heading,
+              'speed': locationData.speed,
+              'measured_at': DateTime.now().toIso8601String(),
               if (widget.trip != null) 'trip': {'trip_id': widget.trip?.id},
             });
       } catch (e) {
