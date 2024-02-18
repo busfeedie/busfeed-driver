@@ -1,0 +1,6 @@
+package driver.busfeed.ie.bus
+
+import io.flutter.embedding.android.FlutterActivity
+
+class MainActivity: FlutterActivity() {
+}
