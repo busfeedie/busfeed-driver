@@ -24,7 +24,7 @@ jobs:
           git init
           git config --global user.email diarmuidr3d@gmail.com 
           git config --global user.name diarmuidr3d 
-          git remote add origin https://diarmuidr3d:${{secrets.WEB_APP_DEPLOY}}github.com/busfeedie/busfeed-driver.git
+          git remote add origin https://diarmuidr3d:${{secrets.WEB_APP_DEPLOY}}:github.com/busfeedie/busfeed-driver.git
           git status
           git checkout -b gh-pages
           git add --all
