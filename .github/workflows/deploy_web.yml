@@ -11,7 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4.1.1
-        with: ${{secrets.WEB_APP_DEPLOY}}
+        with: 
+          token: ${{secrets.WEB_APP_DEPLOY}}
       - uses: subosito/flutter-action@v2.12.0
         with:
           flutter-version: '3.16.8'
