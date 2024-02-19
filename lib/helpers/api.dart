@@ -18,7 +18,9 @@ class BusfeedApi {
         'Authorization': user.authorization,
       },
     );
-    if (response.statusCode != 200) {
+    if (response.statusCode == 401) {
+      user.expired = true;
+    } else if (response.statusCode != 200) {
       throw Exception('Failed to fetch');
     }
     if (response.headers['authorization'] != null) {

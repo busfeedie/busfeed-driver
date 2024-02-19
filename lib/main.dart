@@ -1,4 +1,3 @@
-import 'package:busfeed_driver/models/user_logged_out.dart';
 import 'package:flutter/material.dart';
 
 import 'login.dart';
@@ -59,7 +58,7 @@ class _MyHomePageState extends State<MyHomePage> {
               )
             : user == null || !user!.authenticated
                 ? LoginPage(
-                    userLoggedOut: user as UserLoggedOut?,
+                    user: user,
                     loginCallback: userLoggedIn,
                   )
                 : RouteList(user: user as User));

@@ -1,3 +1,4 @@
+import 'package:busfeed_driver/models/user_common.dart';
 import 'package:flutter/material.dart';
 import 'package:location/location.dart';
 
@@ -5,9 +6,9 @@ import 'models/user.dart';
 import 'models/user_logged_out.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({super.key, this.userLoggedOut, required this.loginCallback});
+  const LoginPage({super.key, this.user, required this.loginCallback});
 
-  final UserLoggedOut? userLoggedOut;
+  final UserCommon? user;
   final Function(User) loginCallback;
 
   @override
@@ -24,7 +25,7 @@ class LoginPageState extends State<LoginPage> {
 
   @override
   void initState() {
-    emailController.text = widget.userLoggedOut?.email ?? '';
+    emailController.text = widget.user?.email ?? '';
     super.initState();
   }
 
