@@ -18,15 +18,21 @@ jobs:
           flutter-version: '3.16.8'
       - run: flutter config --enable-web
       - run: flutter pub get
-      - run: flutter build web --release
       - run: |
+          mkdir build
+          mkdir build/web
           cd build/web
           git init
           git config --global user.email diarmuidr3d@gmail.com 
           git config --global user.name diarmuidr3d 
           git remote add origin https://diarmuidr3d:${{secrets.WEB_APP_DEPLOY}}@github.com/busfeedie/busfeed-driver.git
-          git status
           git checkout -b gh-pages
+          git pull
+          cd ../..
+      - run: flutter build web --release
+      - run: |
+          cd build/web
+          git status
           git add --all
-          git commit -m "update"
+          git commit -m "update from master"
           git push origin gh-pages -f
