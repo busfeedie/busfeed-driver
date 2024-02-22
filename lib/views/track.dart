@@ -36,11 +36,6 @@ class _MyHomePageState extends State<TrackPage> {
   Timer? viewUpdateTimer;
   VehiclePosition? vehiclePosition;
 
-  static const CameraPosition _ireland = CameraPosition(
-    target: LatLng(53, -6),
-    zoom: 14.4746,
-  );
-
   @override
   void initState() {
     if (widget.trip == null || widget.trip!.activeTracking == false) {
@@ -142,6 +137,21 @@ class _MyHomePageState extends State<TrackPage> {
       },
     );
   }
+
+  CameraPosition get initalCameraPosition {
+    if (widget.trip != null) {
+      return CameraPosition(
+        target: LatLng(widget.trip!.first_stop, widget.trip!.startLon),
+        zoom: 14.4746,
+      );
+    }
+    return _ireland;
+  }
+
+  static const CameraPosition _ireland = CameraPosition(
+    target: LatLng(53, -6),
+    zoom: 14.4746,
+  );
 
   bool _activeTrip() {
     return widget.trip?.activeTracking ?? false;
