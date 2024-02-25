@@ -6,6 +6,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 
 import '../helpers/api.dart';
+import '../models/stop_time.dart';
 import '../models/trip.dart';
 import '../models/user.dart';
 
@@ -35,9 +36,13 @@ class _MyHomePageState extends State<TrackPage> {
   bool _isTracking = false;
   Timer? viewUpdateTimer;
   VehiclePosition? vehiclePosition;
+  Set<Marker> markers = {};
 
   @override
   void initState() {
+    if (_firstStopMarker() != null) {
+      markers.add(_firstStopMarker()!);
+    }
     if (widget.trip == null || widget.trip!.activeTracking == false) {
       _setupLocation();
     } else {
@@ -74,15 +79,11 @@ class _MyHomePageState extends State<TrackPage> {
                       zoomControlsEnabled: false,
                       mapToolbarEnabled: false,
                       mapType: MapType.normal,
-                      initialCameraPosition: _ireland,
+                      initialCameraPosition: initalCameraPosition,
                       onMapCreated: (GoogleMapController controller) {
                         _controller.complete(controller);
                       },
-                      markers: vehiclePosition != null
-                          ? {
-                              vehiclePosition!.toMarker(),
-                            }
-                          : {},
+                      markers: markers,
                     )),
                 Container(
                   alignment: Alignment.bottomCenter,
@@ -138,19 +139,32 @@ class _MyHomePageState extends State<TrackPage> {
     );
   }
 
-  CameraPosition get initalCameraPosition {
-    if (widget.trip != null) {
-      return CameraPosition(
-        target: LatLng(widget.trip!.first_stop, widget.trip!.startLon),
-        zoom: 14.4746,
+  Marker? _firstStopMarker() {
+    if (widget.trip != null && widget.trip!.firstStopTime?.stop != null) {
+      StopTime stopTime = widget.trip!.firstStopTime!;
+      return Marker(
+        markerId: stopTime.stop!.markerId,
+        position: LatLng(stopTime.stop!.lat, stopTime.stop!.lon),
+        infoWindow: InfoWindow(title: stopTime.scheduledToDepartIn),
       );
     }
-    return _ireland;
+    return null;
   }
 
-  static const CameraPosition _ireland = CameraPosition(
-    target: LatLng(53, -6),
-    zoom: 14.4746,
+  CameraPosition get initalCameraPosition {
+    if (widget.trip != null && widget.trip!.firstStopTime?.stop != null) {
+      return CameraPosition(
+        target: LatLng(widget.trip!.firstStopTime!.stop!.lat,
+            widget.trip!.firstStopTime!.stop!.lon),
+        zoom: 14,
+      );
+    }
+    return _dublin;
+  }
+
+  static const CameraPosition _dublin = CameraPosition(
+    target: LatLng(53.3447996, -6.2906393),
+    zoom: 12,
   );
 
   bool _activeTrip() {
@@ -218,8 +232,10 @@ class _MyHomePageState extends State<TrackPage> {
       final vehiclePosition =
           await widget.trip?.fetchLastLocation(user: widget.user);
       if (vehiclePosition != null) {
+        markers.remove(this.vehiclePosition?.toMarker());
         setState(() {
           this.vehiclePosition = vehiclePosition;
+          markers.add(vehiclePosition.toMarker());
         });
         _goToTheUser(vehiclePosition.toLocationData());
         final GoogleMapController controller = await _controller.future;

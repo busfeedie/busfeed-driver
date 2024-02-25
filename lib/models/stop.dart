@@ -1,4 +1,5 @@
 import 'package:busfeed_driver/models/pointable.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import 'model.dart';
 
@@ -33,8 +34,8 @@ class Stop extends Model with Pointable {
     this.wheelchairBoarding = WheelchairBoarding.unknown,
     this.gtfsLevelId,
     this.platformCode,
-    double? lat,
-    double? lon,
+    required double lat,
+    required double lon,
     super.createdAt,
     super.updatedAt,
   }) {
@@ -42,7 +43,7 @@ class Stop extends Model with Pointable {
     this.lon = lon;
   }
 
-  Stop.fromJson(super.json)
+  Stop.fromJson(Map<String, dynamic> json)
       : gtfsStopId = json['gtfs_stop_id'].toString(),
         stopCode = json['stop_code'],
         stopName = json['stop_name'],
@@ -57,9 +58,18 @@ class Stop extends Model with Pointable {
             WheelchairBoardingExtension.fromJson(json['wheelchair_boarding']),
         gtfsLevelId = json['gtfs_level_id'],
         platformCode = json['platform_code'],
-        lat = json['lat']?.toDouble(),
-        lon = json['lon']?.toDouble(),
-        super.fromJson();
+        super.fromJson(json) {
+    pointFromJson(json);
+  }
+
+  @override
+  double get lat => super.lat!;
+
+  @override
+  double get lon => super.lon!;
+
+  @override
+  MarkerId get markerId => MarkerId("stop-$id");
 }
 
 enum WheelchairBoarding { unknown, accessible, notAccessible }
