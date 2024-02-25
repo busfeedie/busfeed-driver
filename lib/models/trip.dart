@@ -46,15 +46,31 @@ class Trip {
       this.startTime,
       this.firstStopTime});
 
-  startDateTime(DateTime date) {
+  startDateTimeFromDate(DateTime date) {
     return date.add(startTime!);
   }
 
   statusText() {
-    return activeTracking ? 'Active' : 'Not tracking';
+    if (overdue) {
+      return 'Overdue';
+    }
+    return activeTracking ? 'Tracked' : 'Not tracking';
+  }
+
+  DateTime get startDateTimeToday {
+    final now = DateTime.now();
+    final timeAtMidnight = DateTime(now.year, now.month, now.day);
+    return startDateTimeFromDate(timeAtMidnight);
+  }
+
+  bool get overdue {
+    return startDateTimeToday.isBefore(DateTime.now()) && !activeTracking;
   }
 
   statusColor() {
+    if (overdue) {
+      return Colors.orange;
+    }
     return activeTracking ? Colors.green : Colors.yellow;
   }
 
