@@ -34,7 +34,8 @@ class TripRoute {
   static Future<List<TripRoute>> fetchRoutes(User user) async {
     var responseBody =
         await BusfeedApi.makeRequest(user: user, path: 'api/routes');
-    if (responseBody == null) {
+    if (responseBody == null ||
+        (responseBody is! List && responseBody["error"] != null)) {
       return [];
     }
     return responseBody
