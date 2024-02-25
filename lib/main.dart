@@ -1,3 +1,4 @@
+import 'package:busfeed_driver/models/user_logged_out.dart';
 import 'package:flutter/material.dart';
 
 import 'login.dart';
@@ -73,15 +74,19 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void userLoggedIn(User user) {
+    user.userExpiryCallback = logoutUser;
     setState(() {
       this.user = user;
     });
-    // Navigator.(
-    //   context,
-    //   MaterialPageRoute(
-    //       builder: (context) => RouteListPage(
-    //             user: user,
-    //           )),
-    // );
+  }
+
+  void logoutUser() {
+    setState(() {
+      if (user != null) {
+        user = UserLoggedOut(email: user!.email);
+      } else {
+        user = null;
+      }
+    });
   }
 }

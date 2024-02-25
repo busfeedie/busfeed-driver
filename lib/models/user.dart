@@ -4,7 +4,8 @@ class User extends UserCommon {
   final String id;
   final String appId;
   late String _authorization;
-  bool expired = false;
+  bool _expired = false;
+  Function()? userExpiryCallback;
 
   User(
       {required this.id,
@@ -46,6 +47,17 @@ class User extends UserCommon {
   set authorization(String value) {
     _authorization = value;
     writeAuthToStore();
+  }
+
+  bool get expired {
+    return _expired;
+  }
+
+  set expired(bool value) {
+    _expired = value;
+    if (_expired && userExpiryCallback != null) {
+      userExpiryCallback!();
+    }
   }
 
   static Future<String?> get storedAuth async {

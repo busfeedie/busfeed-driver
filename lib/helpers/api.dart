@@ -26,8 +26,7 @@ class BusfeedApi {
     if (response.headers['authorization'] != null) {
       user.authorization = response.headers['authorization']!;
     }
-    var responseBody = jsonDecode(response.body);
-    return responseBody;
+    return jsonDecode(response.body);
   }
 
   static Future<dynamic> makePostRequest(
