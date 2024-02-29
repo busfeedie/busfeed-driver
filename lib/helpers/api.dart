@@ -6,22 +6,35 @@ import '../constants/api.dart';
 import '../models/user.dart';
 
 class BusfeedApi {
-  static Future<dynamic> makeRequest(
+  http.Client client = http.Client();
+
+  Future<dynamic> makeRequest(
       {required User user,
       required String path,
       Map<String, String>? queryParameters}) async {
     final url = Uri.https(API_URL, path, queryParameters);
-    final response = await http.get(
-      url,
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-        'Authorization': user.authorization,
-      },
-    );
-    if (response.statusCode == 401) {
+    http.Response? response;
+    try {
+      response = await client.get(
+        url,
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': user.authorization,
+        },
+      );
+    } catch (e) {
+      if (response?.statusCode == 401) {
+        user.expired = true;
+      } else {
+        rethrow;
+      }
+    }
+    if (response == null) {
+      throw Exception('Failed to send request');
+    } else if (response.statusCode == 401) {
       user.expired = true;
     } else if (response.statusCode != 200) {
-      throw Exception('Failed to fetch');
+      throw Exception('Failed to send request');
     }
     if (response.headers['authorization'] != null) {
       user.authorization = response.headers['authorization']!;

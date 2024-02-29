@@ -67,6 +67,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void checkUserStorage() async {
     var user = await UserCommon.loadFromStorage();
+    if (user is User) {
+      user.userExpiryCallback = logoutUser;
+    }
     setState(() {
       this.user = user;
       loadingUser = false;
