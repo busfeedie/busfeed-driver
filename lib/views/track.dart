@@ -262,12 +262,16 @@ class _MyHomePageState extends State<TrackPage> {
       }
     }
 
-    _locationPermissionGranted = await location.hasPermission();
-    if (_locationPermissionGranted == PermissionStatus.denied) {
-      _locationPermissionGranted = await location.requestPermission();
-      if (_locationPermissionGranted != PermissionStatus.granted) {
-        return;
-      }
+    var locationPermissionGranted = await location.hasPermission();
+    if (locationPermissionGranted == PermissionStatus.denied) {
+      locationPermissionGranted = await location.requestPermission();
+    }
+
+    setState(() {
+      _locationPermissionGranted = locationPermissionGranted;
+    });
+    if (locationPermissionGranted != PermissionStatus.granted) {
+      return;
     }
 
     await location.changeSettings(
