@@ -2,6 +2,8 @@
 
 For live tracking bus location
 
+<a href="https://github.com/busfeedie/busfeed-driver/actions"><img src="https://github.com/busfeedie/busfeed-driver/workflows/test/badge.svg" alt="Build Status"></a>
+
 ## Getting Started
 
 This project is a starting point for a Flutter application.

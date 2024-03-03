@@ -43,6 +43,36 @@ void main() {
         verify(user.expired = true);
       });
     });
+    group('returns json', () {
+      BusfeedApi api = BusfeedApi();
+      setUp(() {
+        api = BusfeedApi();
+        api.client = MockClient((request) async {
+          final mapJson = [
+            {'id': 123},
+            {'id': 456}
+          ];
+          return Response(json.encode(mapJson), 200);
+        });
+      });
+      test("User is not marked as expired", () async {
+        User user = User(
+            id: "test",
+            email: "test@busfeed.ie",
+            appId: "test",
+            authorization: "Bearer test");
+        await api.makeRequest(user: user, path: 'api/routes');
+        expect(user.expired, false);
+      });
+      test("json is parsed", () async {
+        User user = MockUser();
+        final response = await api.makeRequest(user: user, path: 'api/routes');
+        expect(response, [
+          {'id': 123},
+          {'id': 456}
+        ]);
+      });
+    });
   });
   group('makePostRequest', () {
     group('returns unauthorized', () {
