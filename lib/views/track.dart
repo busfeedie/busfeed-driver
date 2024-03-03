@@ -274,7 +274,8 @@ void _locationChanged(
   var tripId = await Trip.tripIdFromStorage();
   // _goToTheUser(locData);
   try {
-    await BusfeedApi.makePostRequest(user: user, path: 'api/positions', body: {
+    await BusfeedApi()
+        .makePostRequest(user: user, path: 'api/positions', body: {
       'lat': locData.lat,
       'lon': locData.lon,
       'bearing': locData.bearing,

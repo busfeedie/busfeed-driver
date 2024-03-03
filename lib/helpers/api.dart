@@ -42,14 +42,13 @@ class BusfeedApi {
     return jsonDecode(response.body);
   }
 
-  static Future<dynamic> makePostRequest(
+  Future<dynamic> makePostRequest(
       {required User user,
       required String path,
       Map<String, dynamic>? queryParameters,
       Map<String, dynamic>? body}) async {
-    print("Making post request $path");
     final url = Uri.https(API_URL, path, queryParameters);
-    final response = await http.post(url,
+    final response = await client.post(url,
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
           'Authorization': user.authorization,
