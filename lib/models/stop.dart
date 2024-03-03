@@ -1,4 +1,4 @@
-import 'package:busfeed_driver/models/pointable.dart';
+import 'package:busfeed_driver/abstracts/pointable.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import 'model.dart';

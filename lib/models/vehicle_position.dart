@@ -1,5 +1,6 @@
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:location/location.dart';
+
+import '../abstracts/location_data.dart';
 
 class VehiclePosition {
   final String id;
@@ -50,18 +51,12 @@ class VehiclePosition {
   }
 
   LocationData toLocationData() {
-    return LocationData.fromMap({
-      'latitude': lat,
-      'longitude': lon,
-      'accuracy': 0.0,
-      'altitude': 0.0,
-      'speed': speed ?? 0.0,
-      'speed_accuracy': 0.0,
-      'heading': bearing ?? 0.0,
-      'time': measuredAt?.millisecondsSinceEpoch.ceilToDouble() ?? 0.0,
-      'floor': 0.0,
-      'vertical_accuracy': 0.0,
-    });
+    return LocationData(
+        lat: lat,
+        lon: lon,
+        speed: speed ?? 0.0,
+        bearing: bearing ?? 0.0,
+        measuredAt: measuredAt);
   }
 
   final markerId = const MarkerId("vehicle");

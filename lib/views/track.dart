@@ -1,16 +1,26 @@
 import 'dart:async';
 
+import 'package:background_location_tracker/background_location_tracker.dart';
 import 'package:busfeed_driver/models/vehicle_position.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:location/location.dart';
+import 'package:permission_handler/permission_handler.dart';
 
+import '../abstracts/location_data.dart';
 import '../helpers/api.dart';
 import '../models/stop_time.dart';
 import '../models/trip.dart';
 import '../models/user.dart';
+import '../models/user_common.dart';
 
 const viewRefreshTime = Duration(seconds: 10);
+
+@pragma('vm:entry-point')
+void backgroundCallback() {
+  BackgroundLocationTrackerManager.handleBackgroundUpdated(
+    (data) async => _locationChanged(locationData: data),
+  );
+}
 
 class TrackPage extends StatefulWidget {
   const TrackPage(
@@ -27,11 +37,8 @@ class TrackPage extends StatefulWidget {
 class _MyHomePageState extends State<TrackPage> {
   final Completer<GoogleMapController> _controller =
       Completer<GoogleMapController>();
-
-  Location location = Location();
   User? user;
 
-  bool _locationServiceEnabled = false;
   PermissionStatus _locationPermissionGranted = PermissionStatus.denied;
   bool _isTracking = false;
   Timer? viewUpdateTimer;
@@ -127,7 +134,8 @@ class _MyHomePageState extends State<TrackPage> {
                 textStyle: Theme.of(context).textTheme.labelLarge,
               ),
               child: const Text('Stop Tracking'),
-              onPressed: () {
+              onPressed: () async {
+                await BackgroundLocationTrackerManager.stopTracking();
                 _isTracking = false;
                 Navigator.pop(context);
                 Navigator.pop(context);
@@ -174,52 +182,38 @@ class _MyHomePageState extends State<TrackPage> {
   void _goToTheUser(LocationData locationData) async {
     final GoogleMapController controller = await _controller.future;
     CameraPosition userLocation = CameraPosition(
-        bearing: locationData.heading!,
-        target: LatLng(locationData.latitude!, locationData.longitude!),
+        bearing: locationData.bearing!,
+        target: LatLng(locationData.lat!, locationData.lon!),
         zoom: 14.4746);
     await controller
         .animateCamera(CameraUpdate.newCameraPosition(userLocation));
   }
 
-  _locationChanged(LocationData locationData) async {
-    _goToTheUser(locationData);
-    if (_isTracking) {
-      _trackLocationChanged(locationData);
-    }
-  }
-
-  _trackLocationChanged(LocationData locationData) async {
-    if (widget.trip != null) {
-      try {
-        final time = locationData.time != null
-            ? DateTime.fromMillisecondsSinceEpoch(locationData.time!.toInt())
-            : DateTime.now();
-        await BusfeedApi.makePostRequest(
-            user: widget.user,
-            path: 'api/positions',
-            body: {
-              'lat': locationData.latitude,
-              'lon': locationData.longitude,
-              'bearing': locationData.heading,
-              'speed': locationData.speed,
-              'measured_at': time.toIso8601String(),
-              if (widget.trip != null) 'trip': {'trip_id': widget.trip?.id},
-            });
-      } catch (e) {
-        print('Error sending location');
-        print(e);
-      }
-    }
-  }
-
-  void startTracking() {
-    location.enableBackgroundMode(enable: true);
+  void startTracking() async {
+    _setupLocation();
+    widget.trip!.startTracking();
+    WidgetsFlutterBinding.ensureInitialized();
+    await BackgroundLocationTrackerManager.initialize(
+      backgroundCallback,
+      config: const BackgroundLocationTrackerConfig(
+        loggingEnabled: true,
+        androidConfig: AndroidConfig(
+          notificationIcon: 'explore',
+          trackingInterval: Duration(seconds: 10),
+          distanceFilterMeters: null,
+        ),
+        iOSConfig: IOSConfig(
+          activityType: ActivityType.FITNESS,
+          distanceFilterMeters: null,
+          restartAfterKill: true,
+        ),
+      ),
+    );
+    await BackgroundLocationTrackerManager.startTracking();
     setState(() {
       _isTracking = true;
       widget.trip?.activeTracking = true;
     });
-    location.getLocation();
-    location.onLocationChanged.listen(_locationChanged);
   }
 
   onDispose() {
@@ -254,32 +248,42 @@ class _MyHomePageState extends State<TrackPage> {
   }
 
   void _setupLocation() async {
-    _locationServiceEnabled = await location.serviceEnabled();
-    if (!_locationServiceEnabled) {
-      _locationServiceEnabled = await location.requestService();
-      if (!_locationServiceEnabled) {
-        return;
-      }
-    }
+    final result = await Permission.locationAlways.request();
 
-    var locationPermissionGranted = await location.hasPermission();
-    if (locationPermissionGranted == PermissionStatus.denied) {
-      locationPermissionGranted = await location.requestPermission();
-    }
-
-    setState(() {
-      _locationPermissionGranted = locationPermissionGranted;
-    });
-    if (locationPermissionGranted != PermissionStatus.granted) {
+    final notificationResult = await Permission.notification.request();
+    if (notificationResult != PermissionStatus.granted) {
       return;
     }
 
-    await location.changeSettings(
-      accuracy: LocationAccuracy.high,
-      interval: 1000,
-      distanceFilter: 10,
-    );
-    await location.getLocation();
-    location.onLocationChanged.listen(_locationChanged);
+    setState(() {
+      _locationPermissionGranted = result;
+    });
+    if (_locationPermissionGranted != PermissionStatus.granted) {
+      return;
+    }
+  }
+}
+
+void _locationChanged(
+    {required BackgroundLocationUpdateData locationData}) async {
+  LocationData locData = LocationData.fromBackGroundLocationData(locationData);
+  var user = await UserCommon.loadFromStorage();
+  if (user is! User) {
+    return;
+  }
+  var tripId = await Trip.tripIdFromStorage();
+  // _goToTheUser(locData);
+  try {
+    await BusfeedApi.makePostRequest(user: user, path: 'api/positions', body: {
+      'lat': locData.lat,
+      'lon': locData.lon,
+      'bearing': locData.bearing,
+      'speed': locData.speed,
+      'measured_at': locData.measuredAt!.toIso8601String(),
+      if (tripId != null) 'trip': {'trip_id': tripId},
+    });
+  } catch (e) {
+    print('Error sending location');
+    print(e);
   }
 }

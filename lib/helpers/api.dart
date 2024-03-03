@@ -47,6 +47,7 @@ class BusfeedApi {
       required String path,
       Map<String, dynamic>? queryParameters,
       Map<String, dynamic>? body}) async {
+    print("Making post request $path");
     final url = Uri.https(API_URL, path, queryParameters);
     final response = await http.post(url,
         headers: <String, String>{

@@ -1,6 +1,7 @@
 import 'package:busfeed_driver/models/user.dart';
 import 'package:busfeed_driver/models/vehicle_position.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
 
 import '../constants/gtfs.dart';
@@ -45,6 +46,9 @@ class Trip {
       this.days,
       this.startTime,
       this.firstStopTime});
+
+  static const _storage = FlutterSecureStorage();
+  static const String _trackingTripKey = 'trackingTripId';
 
   startDateTimeFromDate(DateTime date) {
     return date.add(startTime!);
@@ -126,5 +130,17 @@ class Trip {
       return null;
     }
     return VehiclePosition.fromJson(responseBody);
+  }
+
+  void startTracking() async {
+    _writeTripIdToStore();
+  }
+
+  _writeTripIdToStore() async {
+    await _storage.write(key: _trackingTripKey, value: id);
+  }
+
+  static Future<String?> tripIdFromStorage() async {
+    return _storage.read(key: _trackingTripKey);
   }
 }
