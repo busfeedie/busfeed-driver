@@ -11,7 +11,9 @@ class User extends UserCommon {
       {required this.id,
       required super.email,
       required this.appId,
-      required String authorization}) {
+      required String authorization,
+      this.userExpiryCallback,
+      super.storage}) {
     _authorization = authorization;
   }
 
@@ -61,30 +63,30 @@ class User extends UserCommon {
   }
 
   static Future<String?> get storedAuth async {
-    return UserCommon.storage.read(key: userAuthKey);
+    return UserCommon.secureStorage.read(key: userAuthKey);
   }
 
   static Future<String?> get storedId async {
-    return UserCommon.storage.read(key: userIdKey);
+    return UserCommon.secureStorage.read(key: userIdKey);
   }
 
   static Future<String?> get storedAppId async {
-    return UserCommon.storage.read(key: userAppId);
+    return UserCommon.secureStorage.read(key: userAppId);
   }
 
   writeEmailToStore() async {
-    await UserCommon.storage.write(key: userEmailKey, value: email);
+    await UserCommon.secureStorage.write(key: userEmailKey, value: email);
   }
 
   writeAuthToStore() async {
-    await UserCommon.storage.write(key: userAuthKey, value: authorization);
+    await storage.write(key: userAuthKey, value: authorization);
   }
 
   writeIdToStore() async {
-    await UserCommon.storage.write(key: userIdKey, value: id);
+    await UserCommon.secureStorage.write(key: userIdKey, value: id);
   }
 
   writeAppIdToStore() async {
-    await UserCommon.storage.write(key: userAppId, value: appId);
+    await UserCommon.secureStorage.write(key: userAppId, value: appId);
   }
 }
