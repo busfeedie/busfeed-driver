@@ -237,7 +237,6 @@ class _MyHomePageState extends State<TrackPage> {
       }
     } on Exception catch (e, stackTrace) {
       print('Error fetching last location');
-      print(e);
       print(stackTrace.toString());
     }
   }

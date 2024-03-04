@@ -84,6 +84,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void logoutUser() {
+    Navigator.of(context).popUntil((route) => route.isFirst);
     setState(() {
       if (user != null) {
         user = UserLoggedOut(email: user!.email);
