@@ -12,8 +12,7 @@ class User extends UserCommon {
       required super.email,
       required this.appId,
       required String authorization,
-      this.userExpiryCallback,
-      super.storage}) {
+      this.userExpiryCallback}) {
     _authorization = authorization;
   }
 
@@ -79,7 +78,8 @@ class User extends UserCommon {
   }
 
   writeAuthToStore() async {
-    await storage.write(key: userAuthKey, value: authorization);
+    await UserCommon.secureStorage
+        .write(key: userAuthKey, value: authorization);
   }
 
   writeIdToStore() async {

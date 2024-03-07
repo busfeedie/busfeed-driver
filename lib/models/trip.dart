@@ -1,7 +1,7 @@
+import 'package:busfeed_driver/helpers/storage.dart';
 import 'package:busfeed_driver/models/user.dart';
 import 'package:busfeed_driver/models/vehicle_position.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
 
 import '../constants/gtfs.dart';
@@ -47,7 +47,7 @@ class Trip {
       this.startTime,
       this.firstStopTime});
 
-  static const _storage = FlutterSecureStorage();
+  static final _storage = LocalStorage();
   static const String _trackingTripKey = 'trackingTripId';
 
   startDateTimeFromDate(DateTime date) {

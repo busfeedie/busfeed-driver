@@ -11,11 +11,8 @@ const String userAppId = 'userAppId';
 abstract class UserCommon {
   final String email;
   static LocalStorage secureStorage = LocalStorage();
-  late final LocalStorage storage;
 
-  UserCommon({required this.email, storage}) {
-    this.storage = storage ?? secureStorage;
-  }
+  UserCommon({required this.email});
 
   bool get authenticated => false;
 

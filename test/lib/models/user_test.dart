@@ -1,3 +1,4 @@
+import 'package:busfeed_driver/helpers/storage.dart';
 import 'package:busfeed_driver/models/user.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
@@ -13,12 +14,9 @@ void main() {
     });
     test('setting the authorization updates its value', () {
       var storageMock = MockFlutterSecureStorage();
+      LocalStorage().setMockStoreForTest(storageMock);
       User user = User(
-          id: "test",
-          email: "",
-          appId: 'test',
-          authorization: "Bearer test",
-          storage: storageMock);
+          id: "test", email: "", appId: 'test', authorization: "Bearer test");
       expect(user.authorization, "Bearer test");
       user.authorization = "Bearer 123";
       expect(user.authorization, "Bearer 123");
