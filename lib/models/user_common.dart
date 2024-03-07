@@ -29,15 +29,19 @@ abstract class UserCommon {
   }
 
   static Future<UserCommon?> loadFromStorage() async {
-    if (await anyUserInStorage()) {
-      if (await authenticatedUserInStorage()) {
-        try {
-          return User.loadFromStorage();
-        } catch (e) {
-          return UserLoggedOut(email: (await storedEmail)!);
+    try {
+      if (await anyUserInStorage()) {
+        if (await authenticatedUserInStorage()) {
+          try {
+            return User.loadFromStorage();
+          } catch (e) {
+            return UserLoggedOut(email: (await storedEmail)!);
+          }
         }
+        return UserLoggedOut(email: (await storedEmail)!);
       }
-      return UserLoggedOut(email: (await storedEmail)!);
+    } catch (e) {
+      return null;
     }
     return null;
   }

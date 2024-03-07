@@ -27,6 +27,7 @@ void main() {
     expect(find.text('Login'), findsOneWidget);
   });
   group('user is logged in with routes', () {
+    var store = MockFlutterSecureStorage();
     setUp(() {
       HttpClient().setMockClientForTest(MockClient((request) async {
         if (request.url.path == 'api/routes') {
@@ -45,7 +46,7 @@ void main() {
         final mapJson = {'error': "not found"};
         return Response(json.encode(mapJson), 404);
       }));
-      var store = MockFlutterSecureStorage();
+      store = MockFlutterSecureStorage();
       when(store.read(key: 'userAuthorization'))
           .thenAnswer((_) async => 'Bearer test');
       when(store.read(key: 'userEmail'))
@@ -59,6 +60,13 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Busfeed'), findsOneWidget);
       expect(find.text('short name'), findsOneWidget);
+    });
+    testWidgets('does not fail if store fails', (tester) async {
+      when(store.read(key: 'userEmail')).thenThrow(ArgumentError());
+      await tester.pumpWidget(const MyApp());
+      await tester.pumpAndSettle();
+      expect(find.text('Busfeed'), findsOneWidget);
+      expect(find.text('Sign in'), findsOneWidget);
     });
   });
   group('routes returns not authorized', () {
