@@ -1,6 +1,7 @@
 import 'package:busfeed_driver/models/user.dart';
 import 'package:busfeed_driver/models/user_logged_out.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
+import '../helpers/storage.dart';
 
 const String userEmailKey = 'userEmail';
 const String userAuthKey = 'userAuthorization';
@@ -9,8 +10,8 @@ const String userAppId = 'userAppId';
 
 abstract class UserCommon {
   final String email;
-  static const FlutterSecureStorage secureStorage = FlutterSecureStorage();
-  late final FlutterSecureStorage storage;
+  static LocalStorage secureStorage = LocalStorage();
+  late final LocalStorage storage;
 
   UserCommon({required this.email, storage}) {
     this.storage = storage ?? secureStorage;

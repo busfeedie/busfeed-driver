@@ -5,8 +5,20 @@ import 'package:http/http.dart' as http;
 import '../constants/api.dart';
 import '../models/user.dart';
 
-class BusfeedApi {
-  http.Client client = http.Client();
+class HttpClient {
+  static final HttpClient _singleton = HttpClient._internal();
+
+  var _client = http.Client();
+
+  factory HttpClient() {
+    return _singleton;
+  }
+
+  HttpClient._internal();
+
+  setMockClientForTest(client) {
+    _client = client;
+  }
 
   Future<dynamic> makeRequest(
       {required User user,
@@ -15,7 +27,7 @@ class BusfeedApi {
     final url = Uri.https(API_URL, path, queryParameters);
     http.Response? response;
     try {
-      response = await client.get(
+      response = await _client.get(
         url,
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
@@ -48,7 +60,7 @@ class BusfeedApi {
       Map<String, dynamic>? queryParameters,
       Map<String, dynamic>? body}) async {
     final url = Uri.https(API_URL, path, queryParameters);
-    final response = await client.post(url,
+    final response = await _client.post(url,
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
           'Authorization': user.authorization,

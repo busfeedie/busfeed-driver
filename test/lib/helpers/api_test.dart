@@ -12,13 +12,13 @@ import '../../mocks/user.mocks.dart';
 void main() {
   group('makeRequest', () {
     group('returns unauthorized', () {
-      BusfeedApi api = BusfeedApi();
+      HttpClient api = HttpClient();
       setUp(() {
-        api = BusfeedApi();
-        api.client = MockClient((request) async {
+        api = HttpClient();
+        api.setMockClientForTest(MockClient((request) async {
           final mapJson = {'id': 123};
           return Response(json.encode(mapJson), 401);
-        });
+        }));
       });
       test("User is marked as expired", () async {
         User user = User(
@@ -37,16 +37,16 @@ void main() {
       });
     });
     group('returns json', () {
-      BusfeedApi api = BusfeedApi();
+      HttpClient api = HttpClient();
       setUp(() {
-        api = BusfeedApi();
-        api.client = MockClient((request) async {
+        api = HttpClient();
+        api.setMockClientForTest(MockClient((request) async {
           final mapJson = [
             {'id': 123},
             {'id': 456}
           ];
           return Response(json.encode(mapJson), 200);
-        });
+        }));
       });
       test("User is not marked as expired", () async {
         User user = User(
@@ -69,13 +69,13 @@ void main() {
   });
   group('makePostRequest', () {
     group('returns unauthorized', () {
-      BusfeedApi api = BusfeedApi();
+      HttpClient api = HttpClient();
       setUp(() {
-        api = BusfeedApi();
-        api.client = MockClient((request) async {
+        api = HttpClient();
+        api.setMockClientForTest(MockClient((request) async {
           final mapJson = {'id': 123};
           return Response(json.encode(mapJson), 401);
-        });
+        }));
       });
       test("User is marked as expired", () async {
         User user = User(

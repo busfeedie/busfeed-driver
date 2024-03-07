@@ -118,13 +118,13 @@ class Trip {
       if (route != null) 'route_id': route.id,
       if (dateTime != null) 'date': DateFormat('yyyy-MM-dd').format(dateTime),
     };
-    var responseBody = await BusfeedApi().makeRequest(
+    var responseBody = await HttpClient().makeRequest(
         user: user, path: 'api/trips', queryParameters: queryParameters);
     return responseBody.map<Trip>((json) => Trip.fromJson(json)).toList();
   }
 
   Future<VehiclePosition?> fetchLastLocation({required User user}) async {
-    var responseBody = await BusfeedApi()
+    var responseBody = await HttpClient()
         .makeRequest(user: user, path: 'api/trips/$id/latest_position');
     if (responseBody == null) {
       return null;
