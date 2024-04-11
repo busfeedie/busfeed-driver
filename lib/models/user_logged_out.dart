@@ -9,8 +9,9 @@ import '../constants/api.dart';
 class UserLoggedOut extends UserCommon {
   UserLoggedOut({required super.email});
 
-  Future<User> login({required String password}) async {
-    final url = Uri.https(API_URL, 'api/login');
+  Future<User> login(
+      {required String password, String path = 'users/sign_in'}) async {
+    final url = Uri.https(API_URL, path);
     final response = await http.post(
       url,
       headers: <String, String>{
@@ -24,6 +25,9 @@ class UserLoggedOut extends UserCommon {
       }),
     );
     if (response.statusCode != 200) {
+      if (path != 'api/login') {
+        return login(password: password, path: 'api/login');
+      }
       throw Exception('Login Failed: ${response.body}');
     }
     var responseBody = jsonDecode(response.body)['data'];
