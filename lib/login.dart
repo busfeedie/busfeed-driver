@@ -98,21 +98,20 @@ class LoginPageState extends State<LoginPage> {
                       onPressed: _login,
                       child: const Text('Login'),
                     )),
-                // Row(
-                //   children: <Widget>[
-                //     const Text('Does not have account?'),
-                //     TextButton(
-                //       child: const Text(
-                //         'Sign in',
-                //         style: TextStyle(fontSize: 20),
-                //       ),
-                //       onPressed: () {
-                //         //signup screen
-                //       },
-                //     )
-                //   ],
-                //   mainAxisAlignment: MainAxisAlignment.center,
-                // ),
+                const Column(
+                  children: <Widget>[
+                    SizedBox(height: 50),
+                    Text(
+                      'This app accesses your location in the background.',
+                      style:
+                          TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
+                    ),
+                    Text(
+                        'This is used to track the bus location while driving.'),
+                    Text(
+                        'It is only used for tracking the vehicle location for real time information.'),
+                  ],
+                ),
               ],
             ));
   }
