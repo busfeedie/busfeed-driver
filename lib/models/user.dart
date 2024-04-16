@@ -12,7 +12,8 @@ class User extends UserCommon {
       required super.email,
       required this.appId,
       required String authorization,
-      this.userExpiryCallback}) {
+      this.userExpiryCallback,
+      super.locationPermission}) {
     _authorization = authorization;
   }
 
@@ -23,6 +24,8 @@ class User extends UserCommon {
         authorization: (await storedAuth)!,
         id: (await storedId)!,
         appId: (await storedAppId)!,
+        locationPermission:
+            (await UserCommon.storedLocationPermission) == 'true',
       );
     } catch (e) {
       return null;
@@ -34,6 +37,7 @@ class User extends UserCommon {
     await writeAuthToStore();
     await writeIdToStore();
     await writeAppIdToStore();
+    await writeLocationPermissionToStore();
   }
 
   @override

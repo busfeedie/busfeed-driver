@@ -7,12 +7,14 @@ const String userEmailKey = 'userEmail';
 const String userAuthKey = 'userAuthorization';
 const String userIdKey = 'userId';
 const String userAppId = 'userAppId';
+const String userLocationPermission = 'userLocationPermission';
 
 abstract class UserCommon {
   final String email;
+  bool locationPermission = false;
   static LocalStorage secureStorage = LocalStorage();
 
-  UserCommon({required this.email});
+  UserCommon({required this.email, this.locationPermission = false});
 
   bool get authenticated => false;
 
@@ -24,8 +26,18 @@ abstract class UserCommon {
     return secureStorage.read(key: userEmailKey);
   }
 
+  static Future<String?> get storedLocationPermission async {
+    return secureStorage.read(key: userLocationPermission);
+  }
+
   static Future<bool> authenticatedUserInStorage() async {
     return (await secureStorage.read(key: userAuthKey)) != null;
+  }
+
+  writeLocationPermissionToStore() async {
+    await UserCommon.secureStorage.write(
+        key: userLocationPermission,
+        value: locationPermission ? 'true' : 'false');
   }
 
   static Future<UserCommon?> loadFromStorage() async {
@@ -35,10 +47,14 @@ abstract class UserCommon {
           try {
             return User.loadFromStorage();
           } catch (e) {
-            return UserLoggedOut(email: (await storedEmail)!);
+            return UserLoggedOut(
+                email: (await storedEmail)!,
+                locationPermission: (await storedLocationPermission) == 'true');
           }
         }
-        return UserLoggedOut(email: (await storedEmail)!);
+        return UserLoggedOut(
+            email: (await storedEmail)!,
+            locationPermission: (await storedLocationPermission) == 'true');
       }
     } catch (e) {
       return null;

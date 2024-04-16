@@ -7,7 +7,7 @@ import 'package:http/http.dart' as http;
 import '../constants/api.dart';
 
 class UserLoggedOut extends UserCommon {
-  UserLoggedOut({required super.email});
+  UserLoggedOut({required super.email, super.locationPermission});
 
   Future<User> login(
       {required String password, String path = 'users/sign_in'}) async {
@@ -35,7 +35,8 @@ class UserLoggedOut extends UserCommon {
         id: responseBody['id'].toString(),
         email: email,
         appId: responseBody['app_id'].toString(),
-        authorization: response.headers['authorization']!);
+        authorization: response.headers['authorization']!,
+        locationPermission: locationPermission);
     user.writeToStore();
     return user;
   }
