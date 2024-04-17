@@ -1,6 +1,7 @@
 import UIKit
 import Flutter
 import GoogleMaps
+import background_location_tracker
 
 @UIApplicationMain
 @objc class AppDelegate: FlutterAppDelegate {
