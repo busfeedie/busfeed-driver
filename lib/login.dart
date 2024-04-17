@@ -101,11 +101,7 @@ class LoginPageState extends State<LoginPage> {
     var userLoggedOut = UserLoggedOut(email: emailController.text);
     try {
       var user = await userLoggedOut.login(password: passwordController.text);
-      if (!user.locationPermission) {
-        _showLocationPermissionDialog(user);
-      } else {
-        widget.loginCallback(user);
-      }
+      widget.loginCallback(user);
     } catch (e) {
       setState(() {
         _loginLoading = false;
@@ -113,32 +109,5 @@ class LoginPageState extends State<LoginPage> {
         failureMessage = e.toString();
       });
     }
-  }
-
-  void _showLocationPermissionDialog(User user) {
-    showDialog<void>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Accept location permission'),
-          content: const Text(
-              'This app collects location data to enable tracking your driving in order to share real time info with bus users, location is tracked even when the app is closed or not in use. It is only used for tracking the vehicle location for real time information and only when you select to start tracking.'),
-          actions: <Widget>[
-            TextButton(
-              style: TextButton.styleFrom(
-                textStyle: Theme.of(context).textTheme.labelLarge,
-              ),
-              child: const Text('Accept'),
-              onPressed: () {
-                user.locationPermission = true;
-                user.writeLocationPermissionToStore();
-                Navigator.pop(context);
-                widget.loginCallback(user);
-              },
-            ),
-          ],
-        );
-      },
-    );
   }
 }

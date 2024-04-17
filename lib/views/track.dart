@@ -190,7 +190,7 @@ class _MyHomePageState extends State<TrackPage> {
   }
 
   void startTracking() async {
-    _setupLocation();
+    await _setupLocation();
     widget.trip!.startTracking();
     WidgetsFlutterBinding.ensureInitialized();
     await BackgroundLocationTrackerManager.initialize(
@@ -246,20 +246,45 @@ class _MyHomePageState extends State<TrackPage> {
     viewUpdateTimer = Timer.periodic(viewRefreshTime, (Timer t) => _showTrip());
   }
 
-  void _setupLocation() async {
+  Future<PermissionStatus> _setupLocation() async {
+    _showLocationPermissionDialog(widget.user);
     final result = await Permission.locationAlways.request();
 
     final notificationResult = await Permission.notification.request();
     if (notificationResult != PermissionStatus.granted) {
-      return;
+      return notificationResult;
     }
 
     setState(() {
       _locationPermissionGranted = result;
     });
-    if (_locationPermissionGranted != PermissionStatus.granted) {
-      return;
-    }
+    return result;
+  }
+
+  void _showLocationPermissionDialog(User user) {
+    showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Accept location permission'),
+          content: const Text(
+              'This app collects location data to enable tracking your driving in order to share real time info with bus users, location is tracked even when the app is closed or not in use. It is only used for tracking the vehicle location for real time information and only when you select to start tracking.'),
+          actions: <Widget>[
+            TextButton(
+              style: TextButton.styleFrom(
+                textStyle: Theme.of(context).textTheme.labelLarge,
+              ),
+              child: const Text('Accept'),
+              onPressed: () {
+                user.locationPermission = true;
+                user.writeLocationPermissionToStore();
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }
 
