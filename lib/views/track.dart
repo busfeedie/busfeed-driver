@@ -39,7 +39,7 @@ class _MyHomePageState extends State<TrackPage> {
       Completer<GoogleMapController>();
   User? user;
 
-  PermissionStatus _locationPermissionGranted = PermissionStatus.denied;
+  bool _locationPermissionGranted = false;
   bool _isTracking = false;
   Timer? viewUpdateTimer;
   VehiclePosition? vehiclePosition;
@@ -77,8 +77,7 @@ class _MyHomePageState extends State<TrackPage> {
                 SizedBox(
                     height: MediaQuery.of(context).size.height - 70,
                     child: GoogleMap(
-                      myLocationEnabled: _locationPermissionGranted ==
-                          PermissionStatus.granted,
+                      myLocationEnabled: _locationPermissionGranted,
                       compassEnabled: false,
                       myLocationButtonEnabled: true,
                       buildingsEnabled: false,
@@ -190,7 +189,10 @@ class _MyHomePageState extends State<TrackPage> {
   }
 
   void startTracking() async {
-    await _setupLocation();
+    var result = await _setupLocation(forTripTrack: true);
+    if (!result) {
+      return;
+    }
     widget.trip!.startTracking();
     WidgetsFlutterBinding.ensureInitialized();
     await BackgroundLocationTrackerManager.initialize(
@@ -246,22 +248,29 @@ class _MyHomePageState extends State<TrackPage> {
     viewUpdateTimer = Timer.periodic(viewRefreshTime, (Timer t) => _showTrip());
   }
 
-  Future<PermissionStatus> _setupLocation() async {
-    _showLocationPermissionDialog(widget.user);
-    final result = await Permission.locationAlways.request();
-
-    final notificationResult = await Permission.notification.request();
-    if (notificationResult != PermissionStatus.granted) {
-      return notificationResult;
+  Future<bool> _setupLocation({bool forTripTrack = false}) async {
+    if (await Permission.locationWhenInUse.request() !=
+        PermissionStatus.granted) {
+      return false;
+    }
+    if (!widget.user.locationPermission) {
+      _showLocationPermissionDialog(widget.user, forTripTrack: forTripTrack);
+      return false;
+    }
+    if (await Permission.locationAlways.request() != PermissionStatus.granted) {
+      return false;
+    }
+    if (await Permission.notification.request() != PermissionStatus.granted) {
+      return false;
     }
 
     setState(() {
-      _locationPermissionGranted = result;
+      _locationPermissionGranted = true;
     });
-    return result;
+    return true;
   }
 
-  void _showLocationPermissionDialog(User user) {
+  void _showLocationPermissionDialog(User user, {bool forTripTrack = false}) {
     showDialog<void>(
       context: context,
       builder: (BuildContext context) {
@@ -278,6 +287,11 @@ class _MyHomePageState extends State<TrackPage> {
               onPressed: () {
                 user.locationPermission = true;
                 user.writeLocationPermissionToStore();
+                if (forTripTrack) {
+                  startTracking();
+                } else {
+                  _setupLocation();
+                }
                 Navigator.pop(context);
               },
             ),
