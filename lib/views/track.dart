@@ -249,12 +249,12 @@ class _MyHomePageState extends State<TrackPage> {
   }
 
   Future<bool> _setupLocation({bool forTripTrack = false}) async {
-    if (await Permission.locationWhenInUse.request() !=
-        PermissionStatus.granted) {
-      return false;
-    }
     if (!widget.user.locationPermission) {
       _showLocationPermissionDialog(widget.user, forTripTrack: forTripTrack);
+      return false;
+    }
+    if (await Permission.locationWhenInUse.request() !=
+        PermissionStatus.granted) {
       return false;
     }
     if (await Permission.locationAlways.request() != PermissionStatus.granted) {
