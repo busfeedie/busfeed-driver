@@ -188,7 +188,7 @@ class _MyHomePageState extends State<TrackPage> {
         .animateCamera(CameraUpdate.newCameraPosition(userLocation));
   }
 
-  void startTracking() async {
+  void startTracking({bool skipPermissionModal = false}) async {
     var result = await _setupLocation(forTripTrack: true);
     if (!result) {
       return;
@@ -248,8 +248,11 @@ class _MyHomePageState extends State<TrackPage> {
     viewUpdateTimer = Timer.periodic(viewRefreshTime, (Timer t) => _showTrip());
   }
 
-  Future<bool> _setupLocation({bool forTripTrack = false}) async {
-    if (!widget.user.locationPermission) {
+  Future<bool> _setupLocation(
+      {bool forTripTrack = false, bool skipPermissionModal = false}) async {
+    if (!skipPermissionModal &&
+        (await Permission.locationAlways.shouldShowRequestRationale ||
+            await Permission.locationWhenInUse.shouldShowRequestRationale)) {
       _showLocationPermissionDialog(widget.user, forTripTrack: forTripTrack);
       return false;
     }
@@ -288,9 +291,9 @@ class _MyHomePageState extends State<TrackPage> {
                 user.locationPermission = true;
                 user.writeLocationPermissionToStore();
                 if (forTripTrack) {
-                  startTracking();
+                  startTracking(skipPermissionModal: true);
                 } else {
-                  _setupLocation();
+                  _setupLocation(skipPermissionModal: true);
                 }
                 Navigator.pop(context);
               },
